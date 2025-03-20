@@ -2,45 +2,64 @@ import json
 import os
 import requests
 #temp list of packages
-pkglist=[]
+url = 'https://eyescary-development.github.io/CDN/agpm_packages/packagelist.json'
+def fetchlist():
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
 
-url = 'https://eyescary-development.github.io/CDN/agpm_packages/packagelist.txt'
 def checkpackagelist(item):
     response = requests.get(url)
     response.raise_for_status()
-    pkglist = response.text.splitlines()
-    if item in pkglist:
+    pkglist = fetchlist()
+    try:
+        temp=pkglist[item]
         return True
-    else:
+    except Exception:
         return False
 
 def lookup(item):
-    response = requests.get("https://eyescary-development.github.io/CDN/agpm_packages/"+item+"/metadata.json")
-    response.raise_for_status()
-    metadata = json.loads(response.text)
-    clouddesc = metadata.get('description')
-    cloudnotes= metadata.get('releaseNotes')
+    metadata=fetchlist()
     print("package name: " + str(item))
-    print("description: " + str(clouddesc))
-    print("latest release notes: " + str(cloudnotes))
+    print("description: " + str(metadata[item]["description"]))
+    print("latest release notes: " + str(metadata[item]["releaseNotes"]))
 
 def install(item):
     os.system("curl -O https://eyescary-development.github.io/CDN/agpm_packages/"+item+"/protocols/install.sh && bash install.sh && rm install.sh")
+    path=os.path.join(os.path.expanduser('~'), '.agpm', 'localmetadata.json')
+    try:
+      with open(path, 'r') as f:
+        localmetadata = json.load(f)
+    except Exception:
+      with open(path, 'w') as f:
+          f.write("{}")
+      localmetadata = {}
+    cloudmetadata=fetchlist()
+    localmetadata[item]=cloudmetadata[item]
+    with open(path, 'w') as f:
+        json.dump(localmetadata, f, indent=2)
 
 def uninstall(item):
     os.system("curl -O https://eyescary-development.github.io/CDN/agpm_packages/"+item+"/protocols/uninstall.sh && bash uninstall.sh && rm uninstall.sh")
+    file_path=os.path.join(os.path.expanduser('~'), '.agpm', 'localmetadata.json')
+    with open(file_path, 'r') as f:
+        localmetadata=json.load(f)
+    localmetadata.pop(item, None)
+    with open(file_path, 'w') as f:
+        json.dump(localmetadata, f, indent=2)
 
 def update(item):
-    response = requests.get("https://eyescary-development.github.io/CDN/agpm_packages/"+item+"/metadata.json")
-    response.raise_for_status()
-    metadata = json.loads(response.text)
-    cloudver = metadata.get('version')
-    file_path = os.path.join(os.path.expanduser('~'), '.agpm', item, 'metadata.json')
+    metadata=fetchlist()
+    cloudver = metadata[item]["version"]
+    file_path = os.path.join(os.path.expanduser('~'), '.agpm', 'localmetadata.json')
     with open(file_path, 'r') as f:
         localmetadata = json.load(f)
-    localver = localmetadata.get('version')
+    localver = localmetadata[item]["version"]
     if localver != cloudver:
         os.system("curl -O https://eyescary-development.github.io/CDN/agpm_packages/"+item+"/protocols/update.sh && bash update.sh && rm update.sh")
+        localmetadata[item]=cloudmetadata[item]
+        with open(file_path, 'w') as f:
+            json.dump(localmetadata, f, indent=2)
     else:
         print("Package already up to date, command already satisfied")
 
