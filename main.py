@@ -11,13 +11,13 @@ def fetchsource():
       with open(settingspath, 'r') as file:
         source = file.readline()
         print("Source url: " + source)
-        return source
+        return source + 'packagelist.json'
     except Exception:
         return "https://eyescary-development.github.io/CDN/agpm_packages/packagelist.json"
 
 def setsource():
     with open(settingspath, 'w') as file:
-        file.write(input("Input your new source url: "))
+        file.write(input("Input your new source url (don't include the packagelist.json, that gets added): "))
 
 def fetchlist():
     response = requests.get(url)
