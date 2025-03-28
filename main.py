@@ -54,7 +54,7 @@ def metawrite(metadata, path):
         json.dump(metadata, f, indent=2)
 
 def install(item):
-    os.system("curl -O "+url+item+"protocols/install.sh && bash install.sh && rm install.sh")
+    os.system("curl -O "+url+item+"/protocols/install.sh && bash install.sh && rm install.sh")
     try:
       with open(path, 'r') as f:
         localmetadata = json.load(f)
@@ -66,7 +66,7 @@ def install(item):
     metawrite(localmetadata, metapath)
 
 def uninstall(item):
-    os.system("curl -O "+url+item+"protocols/uninstall.sh && bash uninstall.sh && rm uninstall.sh")
+    os.system("curl -O "+url+item+"/protocols/uninstall.sh && bash uninstall.sh && rm uninstall.sh")
     localmetadata = fetchlocalmet()
     localmetadata.pop(item, None)
     metawrite(localmetadata, metapath)
@@ -77,7 +77,7 @@ def update(item):
     localmetadata = fetchlocalmet()
     localver = localmetadata[item]["version"]
     if localver != cloudver:
-        os.system("curl -O "+url+item+"protocols/update.sh && bash update.sh && rm update.sh")
+        os.system("curl -O "+url+item+"/protocols/update.sh && bash update.sh && rm update.sh")
         localmetadata[item] = metadata[item]
         metawrite(localmetadata, metapath)
     else:
