@@ -72,13 +72,13 @@ def uninstall(item):
     metawrite(localmetadata, metapath)
 
 def update(item):
-    cloudmetadata=fetchlist()
+    metadata=fetchlist()
     cloudver = metadata[item]["version"]
     localmetadata = fetchlocalmet()
     localver = localmetadata[item]["version"]
     if localver != cloudver:
         os.system("curl -O"+url+item+"/protocols/update.sh && bash update.sh && rm update.sh")
-        localmetadata[item]=cloudmetadata[item]
+        localmetadata[item] = metadata[item]
         metawrite(localmetadata, metapath)
     else:
         print("Package already up to date, command already satisfied")
