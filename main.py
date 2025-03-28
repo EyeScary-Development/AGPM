@@ -3,7 +3,6 @@ import json
 import os
 import requests
 #temp list of packages
-plisturl = ''
 url = ''
 metapath = os.path.join(os.path.expanduser('~'), '.agpm', 'localmetadata.json')
 settingspath = os.path.join(os.path.expanduser('~'), '.agpm', 'sources.escnf')
@@ -24,7 +23,7 @@ def setsource(srcurl):
 
 def fetchlist():
     print("fetching cloud metadata...")
-    response = requests.get(url)
+    response = requests.get(url+"packagelist.json")
     response.raise_for_status()
     return response.json()
 
@@ -78,7 +77,7 @@ def update(item):
     localver = localmetadata[item]["version"]
     if localver != cloudver:
         os.system("curl -O "+url+item+"/protocols/update.sh && bash update.sh && rm update.sh")
-        localmetadata[item] = metadata[item]
+        localmetadata[item]=metadata[item]
         metawrite(localmetadata, metapath)
     else:
         print("Package already up to date, command already satisfied")
@@ -101,8 +100,7 @@ def operate(task, app):
         print("package doesn't exist, terminating...")
 
 def main():
-    global plisturl, url
-    plisturl=fetchsource() + 'packagelist.json'
+    global url
     url=fetchsource()
     usin = input("set (s)ource, or install/lookup/update/uninstall a package (o)?: ")
     match usin:
@@ -111,5 +109,5 @@ def main():
             task,app = input("operation: "), input("app to operate: ")
             operate(task,app)
         case 's':
-            setsource()
+            setsource(input("enter your source url (no need for packagelist.json at the end: )"))
 main()
