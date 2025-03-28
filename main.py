@@ -72,7 +72,7 @@ def uninstall(item):
     metawrite(localmetadata, metapath)
 
 def update(item):
-    metadata=fetchlist()
+    cloudmetadata=fetchlist()
     cloudver = metadata[item]["version"]
     localmetadata = fetchlocalmet()
     localver = localmetadata[item]["version"]
