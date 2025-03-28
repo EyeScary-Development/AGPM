@@ -29,9 +29,13 @@ def fetchlist():
 
 def fetchlocalmet():
     print("fetch local metadata...")
-    with open(metapath, 'r') as f:
+    try:
+      with open(metapath, 'r') as f:
         localmetadata = json.load(f)
-    return localmetadata
+        return localmetadata
+    except Exception:
+        print("local metadata file doesn't exist, returning empty metadata...")
+        return {}
 
 def checkpackagelist(item):
     pkglist = fetchlist()
@@ -54,12 +58,7 @@ def metawrite(metadata, path):
 
 def install(item):
     os.system("curl -O "+url+item+"/protocols/install.sh && bash install.sh && rm install.sh")
-    try:
-      with open(path, 'r') as f:
-        localmetadata = json.load(f)
-    except Exception:
-        localmetadata = {}
-        metawrite(localmetadata, metapath)
+    localmetadata=fetchlocalmet()
     cloudmetadata=fetchlist()
     localmetadata[item]=cloudmetadata[item]
     metawrite(localmetadata, metapath)
